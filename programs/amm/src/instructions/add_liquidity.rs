@@ -11,19 +11,18 @@ use crate::{error::ErrorCode, Pool};
 use super::{mint_tokens, transfer_tokens};
 
 #[derive(Accounts)]
-#[instruction(id:u64)]
 pub struct AddLiquidity<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
 
     #[account(mint::token_program = token_program)]
-    pub token_a_mint: InterfaceAccount<'info, Mint>,
+    pub token_a_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(mint::token_program = token_program)]
-    pub token_b_mint: InterfaceAccount<'info, Mint>,
+    pub token_b_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(mint::token_program = token_program)]
-    pub liquidity_mint: InterfaceAccount<'info, Mint>,
+    pub liquidity_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
         mut,
@@ -31,7 +30,7 @@ pub struct AddLiquidity<'info> {
         associated_token::authority = user,
         associated_token::token_program = token_program
     )]
-    pub user_accout_a: InterfaceAccount<'info, TokenAccount>,
+    pub user_accout_a: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
@@ -39,16 +38,16 @@ pub struct AddLiquidity<'info> {
         associated_token::authority = user,
         associated_token::token_program = token_program
     )]
-    pub user_account_b: InterfaceAccount<'info, TokenAccount>,
+    pub user_account_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
         has_one = token_a_mint,
         has_one = token_b_mint,
-        seeds = [b"pool", token_a_mint.key().as_ref(), token_b_mint.key().as_ref(), id.to_le_bytes().as_ref()],
+        seeds = [b"pool", token_a_mint.key().as_ref(), token_b_mint.key().as_ref()],
         bump = pool.bump
     )]
-    pub pool: Account<'info, Pool>,
+    pub pool: Box<Account<'info, Pool>>,
 
     #[account(
         mut,
@@ -56,7 +55,7 @@ pub struct AddLiquidity<'info> {
         associated_token::authority = pool,
         associated_token::token_program = token_program
     )]
-    pub pool_account_a: InterfaceAccount<'info, TokenAccount>,
+    pub pool_account_a: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
@@ -64,7 +63,7 @@ pub struct AddLiquidity<'info> {
         associated_token::authority = pool,
         associated_token::token_program = token_program
     )]
-    pub pool_account_b: InterfaceAccount<'info, TokenAccount>,
+    pub pool_account_b: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         init_if_needed,
@@ -73,7 +72,7 @@ pub struct AddLiquidity<'info> {
         associated_token::authority = user,
         associated_token::token_program = token_program
     )]
-    pub user_liquidity_account: InterfaceAccount<'info, TokenAccount>,
+    pub user_liquidity_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub token_program: Interface<'info, TokenInterface>,
     pub associated_token_program: Program<'info, AssociatedToken>,

@@ -15,19 +15,18 @@ declare_id!("28ADxZuHrV92hBV6CQ9gug4zASrEvosVe2Qm918NqBbm");
 pub mod amm {
     use super::*;
 
+    #[inline(never)]
     pub fn initialize_pool(
         context: Context<InitializePool>,
-        id: u64,
         amount_a: u64,
         amount_b: u64,
     ) -> Result<()> {
         instructions::initialize_pool::send_tokens_to_vaults(&context, &amount_a, &amount_b)?;
-        instructions::initialize_pool::save_pool_and_mint_liquidity(context, id, amount_a, amount_b)
+        instructions::initialize_pool::save_pool_and_mint_liquidity(context, amount_a, amount_b)
     }
 
     pub fn add_liquidity(
         context: Context<AddLiquidity>,
-        _id: u64,
         amount_a: u64,
         amount_b: u64,
     ) -> Result<()> {
@@ -39,7 +38,7 @@ pub mod amm {
         )
     }
 
-    pub fn swap_tokens(context: Context<Swap>, _id: u64, amount_a: u64) -> Result<()> {
+    pub fn swap_tokens(context: Context<Swap>, amount_a: u64) -> Result<()> {
         let pool = &mut context.accounts.pool;
         let amount_a_u128 = amount_a as u128;
         let pool_amount_a = pool.token_a_amount as u128;
@@ -52,8 +51,6 @@ pub mod amm {
         pool.token_b_amount -= amount_b;
 
         // transfer swapped tokens
-        instructions::swap::transfer_swapped_tokens(context, amount_a, amount_b)?;
-
-        Ok(())
+        instructions::swap::transfer_swapped_tokens(context, amount_a, amount_b)
     }
 }
